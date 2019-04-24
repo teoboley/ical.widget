@@ -1,4 +1,4 @@
-export const command = "/usr/local/bin/icalBuddy  --noRelativeDates --dateFormat \"date: %a %b %e %Y|\" --timeFormat \"%H:%M:%S GMT%z\" --bullet \"event: \" eventsToday+2"
+export const command = "ical.widget/icalBuddy  --noRelativeDates --dateFormat \"date: %a %b %e %Y|\" --timeFormat \"%H:%M:%S GMT%z\" --bullet \"event: \" eventsToday+2"
 
 export const refreshFrequency = 60_000 * 5 // ms
 
