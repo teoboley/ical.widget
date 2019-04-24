@@ -1,6 +1,5 @@
 {
-  "name": "cute calendar events",
-  "description": "Displays events from iCal with cute bullet marks",
-  "author": "Cara Takemoto",
-  "email": "cktakemoto@gmail.com"
+  "name": "calendar events",
+  "description": "Displays events from iCal",
+  "author": "Teo Boley"
 }
