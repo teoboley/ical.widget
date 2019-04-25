@@ -1,4 +1,4 @@
-export const command = "ical.widget/icalBuddy  --noRelativeDates --dateFormat \"date: %a %b %e %Y|\" --timeFormat \"%H:%M:%S GMT%z\" --bullet \"event: \" eventsToday+2"
+export const command = "ical.widget/icalBuddy  --noRelativeDates --dateFormat \"date: %a %b %e %Y|\" --timeFormat \"%H:%M:%S GMT%z\" --bullet \"event: \" eventsToday+6"
 
 export const refreshFrequency = 60_000 * 5 // ms
 
@@ -73,7 +73,7 @@ export const render = ({ output }: { output: any }) => {
 
   return (
     <div>
-    {groupBy(transformedOutput, event => event.startDate, (v1, v2) => v1.toDateString() === v2.toDateString()).map(group => {
+    {groupBy(transformedOutput, event => event.startDate, (v1, v2) => v1.toDateString() === v2.toDateString()).slice(0, 2).map(group => {
       const events = group.elements;
 
       const eventsDay = new Date(group.group);
