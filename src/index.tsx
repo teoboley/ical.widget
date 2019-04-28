@@ -1,14 +1,34 @@
-export const command = "ical.widget/icalBuddy  --noRelativeDates --dateFormat \"date: %a %b %e %Y|\" --timeFormat \"%H:%M:%S GMT%z\" --bullet \"event: \" eventsToday+6"
+export const command =
+  'ical.widget/icalBuddy  --noRelativeDates --dateFormat "date: %a %b %e %Y|" --timeFormat "%H:%M:%S GMT%z" --bullet "event: " eventsToday+6';
 
-export const refreshFrequency = 60_000 * 5 // ms
+export const refreshFrequency = 60_000 * 5; // ms
 
-const colors = ["#ef5350", "#ec407a", "#ab47bc", "#7e57c2", "#5c6bc0", "#42a5f5", "#29b6f6", "#26c6da", "#26a69a", "#66bb6a", "#9ccc65", "#d4e157", "#ffee58", "#ffca28", "#ffa726", "#ff7043", "#8d6e63"];
+const colors = [
+  "#ef5350",
+  "#ec407a",
+  "#ab47bc",
+  "#7e57c2",
+  "#5c6bc0",
+  "#42a5f5",
+  "#29b6f6",
+  "#26c6da",
+  "#26a69a",
+  "#66bb6a",
+  "#9ccc65",
+  "#d4e157",
+  "#ffee58",
+  "#ffca28",
+  "#ffa726",
+  "#ff7043",
+  "#8d6e63"
+];
 
 interface IEvent {
   name: string;
   location?: string;
-  startDate: Date;
-  endDate?: Date;
+  startTime: Date;
+  endTime: Date;
+  allDay: boolean;
   notes?: string;
   attendees?: string;
   calendar: string;
@@ -17,36 +37,76 @@ interface IEvent {
 }
 
 const transformICalBuddyOutput = (output: string): IEvent[] => {
-  return output.split("event: ").filter(line => line !== "").map<IEvent>(eventString => {
-    const eventLines = eventString.split("\n");
-    const nameLine = eventLines[0];
+  return output
+    .split("event: ")
+    .filter(line => line !== "")
+    .map<IEvent>(eventString => {
+      const eventLines = eventString.split("\n");
+      const nameLine = eventLines[0];
 
-    const locationLine = eventLines.find(line => line.includes("location:"));
-    const dateLine = eventLines.find(line => line.includes("date:"))!;
+      const locationLine = eventLines.find(line => line.includes("location:"));
+      const dateLine = eventLines.find(line => line.includes("date:"))!;
 
-    const timeSeparatorIndex = dateLine.indexOf("|");
-    const date = dateLine.substring(dateLine.indexOf(": ") + 2, timeSeparatorIndex)
-    const startTime = dateLine.substring(timeSeparatorIndex + 5, dateLine.lastIndexOf(" - "))
-    const endTime = dateLine.substring(dateLine.lastIndexOf(" - ") + 3)
+      const dateAndTimeSeparatorIndex = dateLine.indexOf("|");
+      const date = dateLine.substring(
+        dateLine.indexOf(": ") + 2,
+        dateAndTimeSeparatorIndex
+      );
 
-    const attendeesLine = eventLines.find(line => line.includes("attendees:"));
+      const timeSeparatorIndex = dateLine.lastIndexOf(" - ");
 
-    const calendarStartIndex = nameLine.lastIndexOf("(");
-    const calendarEndIndex = nameLine.lastIndexOf(")");
+      const startTimeString =
+        (timeSeparatorIndex !== -1 &&
+          dateLine.substring(
+            dateAndTimeSeparatorIndex + 5,
+            timeSeparatorIndex
+          )) ||
+        null;
+      const endTimeString =
+        (timeSeparatorIndex !== -1 &&
+          dateLine.substring(timeSeparatorIndex + 3)) ||
+        null;
 
-    return {
-      name: nameLine.substring(0, calendarStartIndex - 1),
-      location: locationLine && locationLine.substring(locationLine.indexOf(": ") + 2),
-      startDate: new Date(date + " " + startTime),
-      endDate: new Date(date + " " + endTime),
-      attendees: attendeesLine && attendeesLine.substring(attendeesLine.indexOf(": ") + 2) || undefined,
-      calendar: nameLine.substring(calendarStartIndex + 1, calendarEndIndex),
-      // rawLines: [dateLine.substring(dateLine.indexOf(": ") + 2), date, startTime, endTime]
-    };
-  })
-}
+      const startTime = new Date(
+        date + ((startTimeString && " " + startTimeString) || "")
+      );
+      const endTime = new Date(
+        date + ((endTimeString && " " + endTimeString) || "")
+      );
 
-function groupBy<T, Z>(xs: T[], getGroupValue: (x: T) => Z, valuesAreEqual: (v1: Z, v2: Z) => boolean = ((v1, v2) => v1 === v2)) {
+      const attendeesLine = eventLines.find(line =>
+        line.includes("attendees:")
+      );
+
+      const calendarStartIndex = nameLine.lastIndexOf("(");
+      const calendarEndIndex = nameLine.lastIndexOf(")");
+
+      return {
+        name: nameLine.substring(0, calendarStartIndex - 1),
+        location:
+          locationLine &&
+          locationLine.substring(locationLine.indexOf(": ") + 2),
+        startTime,
+        endTime,
+        allDay:
+          startTime.getHours() === 0 &&
+          startTime.getMinutes() === 0 &&
+          startTime.getTime() === endTime.getTime(),
+        attendees:
+          (attendeesLine &&
+            attendeesLine.substring(attendeesLine.indexOf(": ") + 2)) ||
+          undefined,
+        calendar: nameLine.substring(calendarStartIndex + 1, calendarEndIndex)
+        // rawLines: eventLines
+      };
+    });
+};
+
+function groupBy<T, Z>(
+  xs: T[],
+  getGroupValue: (x: T) => Z,
+  valuesAreEqual: (v1: Z, v2: Z) => boolean = (v1, v2) => v1 === v2
+) {
   return xs.reduce<Array<{ group: Z; elements: T[] }>>((acc, x) => {
     const value = getGroupValue(x);
     const existingIndex = acc.findIndex(el => valuesAreEqual(el.group, value));
@@ -54,15 +114,15 @@ function groupBy<T, Z>(xs: T[], getGroupValue: (x: T) => Z, valuesAreEqual: (v1:
     if (existingIndex !== -1) {
       acc[existingIndex].elements.push(x);
     } else {
-      acc.push({ group: value, elements: [x] })
+      acc.push({ group: value, elements: [x] });
     }
 
     return acc;
   }, []);
-};
+}
 
 function getStringNumber(s: string): number {
-  return s.split('').reduce((acc, curr, i) => acc + s.charCodeAt(i), 0);
+  return s.split("").reduce((acc, curr, i) => acc + s.charCodeAt(i), 0);
 }
 
 export const render = ({ output }: { output: any }) => {
@@ -73,41 +133,112 @@ export const render = ({ output }: { output: any }) => {
 
   return (
     <div>
-    {groupBy(transformedOutput, event => event.startDate, (v1, v2) => v1.toDateString() === v2.toDateString()).slice(0, 2).map(group => {
-      const events = group.elements;
+      {groupBy(
+        transformedOutput,
+        event => event.startTime,
+        (v1, v2) => v1.toDateString() === v2.toDateString()
+      )
+        .slice(0, 3)
+        .map(group => {
+          const events = group.elements;
 
-      const eventsDay = new Date(group.group);
-      eventsDay.setHours(0, 0, 0, 0);
+          const eventsDay = new Date(group.group);
+          eventsDay.setHours(0, 0, 0, 0);
 
-      const daysFromToday = Math.floor(((eventsDay as any)-(today as any))/(1000*60*60*24));
+          const daysFromToday = Math.floor(
+            ((eventsDay as any) - (today as any)) / (1000 * 60 * 60 * 24)
+          );
 
-      return (
-      <div>
-        <h5 className={"date"}>{(daysFromToday === 0 ? 'Today' : daysFromToday === 1 ? 'Tomorrow' : daysFromToday === 2 ? 'Day After Tomorrow' : (group.group.toLocaleString() + ` (${daysFromToday} days from today)`)).toUpperCase()}</h5>
-        <div>
-      {events.map(event => {
-        return (
-        <div className="event">
-        <span className="calendar" style={{ backgroundColor: colors[(getStringNumber(event.calendar))%colors.length] }}>{event.calendar}</span>
-      <div className="eventBody">
-        
-        <div className="data">
-          
-          <h4 className="name">{event.name}</h4>
-          <div className="times">
-            <span className="time start">{event.startDate.toLocaleTimeString(undefined, { hour12: true, hour: "numeric", minute: "2-digit" })}</span>{ event.endDate && <span> - <span className="time end">{event.endDate.toDateString() !== event.startDate.toDateString() ? event.endDate.toLocaleString() : event.endDate.toLocaleTimeString(undefined, { hour12: true, hour: "numeric", minute: "2-digit" })}</span></span>}
-          </div>
-          { event.location && <p className="property location">{event.location}</p>}
-          { event.attendees && <p className="property attendees">with {event.attendees}</p>}
-          { event.notes && <p className="property notes">{event.notes}</p>}
-          { event.rawLines && <p>{JSON.stringify(event.rawLines)}</p> }
-        </div>
-      </div>
-      </div>
-      )})}</div>
-      </div>)})}</div>
-  )
-}
+          return (
+            <div>
+              <h5 className={"date"}>
+                {(daysFromToday === 0
+                  ? "Today"
+                  : daysFromToday === 1
+                  ? "Tomorrow"
+                  : daysFromToday === 2
+                  ? "Day After Tomorrow"
+                  : group.group.toLocaleString() +
+                    ` (${daysFromToday} days from today)`
+                ).toUpperCase()}
+              </h5>
+              <div>
+                {events.map(event => {
+                  return (
+                    <div className="event">
+                      <span
+                        className="calendar"
+                        style={{
+                          backgroundColor:
+                            colors[
+                              getStringNumber(event.calendar) % colors.length
+                            ]
+                        }}
+                      >
+                        {event.calendar}
+                      </span>
+                      <div className="eventBody">
+                        <div className="data">
+                          <h4 className="name">{event.name}</h4>
+                          <div className="times">
+                            { !event.allDay ? <span>
+                            <span className="time start">
+                              {event.startTime.toLocaleTimeString(undefined, {
+                                hour12: true,
+                                hour: "numeric",
+                                minute: "2-digit"
+                              })}
+                            </span>
+                            {event.endTime && (
+                              <span>
+                                {" "}
+                                -{" "}
+                                <span className="time end">
+                                  {event.endTime.toDateString() !==
+                                  event.startTime.toDateString()
+                                    ? event.endTime.toLocaleString()
+                                    : event.endTime.toLocaleTimeString(
+                                        undefined,
+                                        {
+                                          hour12: true,
+                                          hour: "numeric",
+                                          minute: "2-digit"
+                                        }
+                                      )}
+                                </span>
+                              </span>
+                            )}
+                            </span> :
+                              <span className={"time allDay"}>All Day</span> }
+                          </div>
+                          {event.location && (
+                            <p className="property location">
+                              {event.location}
+                            </p>
+                          )}
+                          {event.attendees && (
+                            <p className="property attendees">
+                              with {event.attendees}
+                            </p>
+                          )}
+                          {event.notes && (
+                            <p className="property notes">{event.notes}</p>
+                          )}
+                          {event.rawLines && (
+                            <p>{JSON.stringify(event.rawLines)}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+    </div>
+  );
+};
 
 const width = 400;
 const metadataWidth = 100;
@@ -116,7 +247,7 @@ export const className = {
   left: 25,
   bottom: 20,
   fontFamily: "system, -apple-system",
-  color: '#E9E9E9',
+  color: "#E9E9E9",
   width,
   ".date": {
     marginBottom: 10,
@@ -125,14 +256,14 @@ export const className = {
   ".event": {
     marginBottom: 20,
     textShadow: "1px 0 5px rgba(0,0,0,0.6)",
-    
+
     ".eventBody": {
-      display: "flex",
+      display: "flex"
     },
     ".metadata": {
       width: metadataWidth,
       marginLeft: 5,
-      textAlign: 'right'
+      textAlign: "right"
     },
     ".data": {
       width: width - metadataWidth
@@ -144,12 +275,8 @@ export const className = {
       color: "#BBBBBB"
     },
     ".time": {
-      ".soon": {
-
-      },
-      ".now": {
-
-      }
+      ".soon": {},
+      ".now": {}
     },
 
     ".property": {
@@ -162,29 +289,23 @@ export const className = {
       marginTop: 0,
       marginBottom: 2.5,
       marginRight: 10,
-      verticalAlign: 'top',
+      verticalAlign: "top",
       lineHeight: 1.3
     },
     ".calendar": {
-      backgroundColor: 'white',
+      backgroundColor: "white",
       borderRadius: 100,
       marginBottom: 2.5,
-      color: 'black',
+      color: "black",
       padding: "2px 5px",
       fontSize: "0.7em",
       display: "inline-block",
-      verticalAlign: 'middle',
-      textShadow: 'none'
+      verticalAlign: "middle",
+      textShadow: "none"
     },
-    ".location": {
+    ".location": {},
 
-    },
-  
-    ".attendees": {
-
-    },
-    ".notes": {
-
-    }
+    ".attendees": {},
+    ".notes": {}
   }
-}
+};
