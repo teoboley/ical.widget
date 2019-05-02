@@ -12,7 +12,7 @@ This widgets requires [Python 2.7](https://www.python.org/downloads/)
 
 ## Configuration
 
-Configuration resides in a `config.json` file in the widget directory. All of the properties are optional, but the `config.json` file must be present in this folder for `iCal Widget` to run.
+Configuration resides in a `config.jsx` file in the `ical.widget/lib` directory. All of the properties are optional, but the `config.jsx` file must be present in this folder for `iCal Widget` to run.
 
 ```typescript
 interface IConfig {

@@ -1,4 +1,4 @@
-import externalConfig from "./config.json";
+import externalConfig from "./lib/config.jsx";
 
 interface IConfig {
   debug?: boolean;
