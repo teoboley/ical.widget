@@ -1,9 +1,15 @@
-export const command =
-  'ical.widget/icalBuddy  --noRelativeDates --dateFormat "date: %a %b %e %Y|" --timeFormat "%H:%M:%S GMT%z" --bullet "event: " eventsToday+6';
+import externalConfig from "./config.json";
 
-export const refreshFrequency = 60_000 * 5; // ms
+interface IConfig {
+  debug?: boolean;
+  hiddenComponents?: { [P in keyof IEventOptionalDisplayProperties]?: boolean; };
+  hiddenCalendars?: string[];
+  colors?: string[];
+}
 
-const colors = [
+const config: IConfig = externalConfig;
+
+const defaultColors = [
   "#ef5350",
   "#ec407a",
   "#ab47bc",
@@ -23,20 +29,30 @@ const colors = [
   "#8d6e63"
 ];
 
-interface IEvent {
-  name: string;
+export const command =
+  'ical.widget/icalBuddy  --noRelativeDates --dateFormat "date: %a %b %e %Y|" --timeFormat "%H:%M:%S GMT%z" --bullet "event: " eventsToday+6';
+
+export const refreshFrequency = 60_000 * 5; // ms
+
+interface IEventOptionalDisplayProperties {
   location?: string;
-  startTime: Date;
-  endTime: Date;
-  allDay: boolean;
   notes?: string;
   attendees?: string;
   calendar: string;
+}
 
+interface IEvent extends IEventOptionalDisplayProperties {
+  name: string;
+  startTime: Date;
+  endTime: Date;
+  allDay: boolean;
+}
+
+interface IDebuggableEvent extends IEvent {
   rawLines?: string[];
 }
 
-const transformICalBuddyOutput = (output: string): IEvent[] => {
+const transformICalBuddyOutput = (output: string): IDebuggableEvent[] => {
   return output
     .split("event: ")
     .filter(line => line !== "")
@@ -96,8 +112,8 @@ const transformICalBuddyOutput = (output: string): IEvent[] => {
           (attendeesLine &&
             attendeesLine.substring(attendeesLine.indexOf(": ") + 2)) ||
           undefined,
-        calendar: nameLine.substring(calendarStartIndex + 1, calendarEndIndex)
-        // rawLines: eventLines
+        calendar: nameLine.substring(calendarStartIndex + 1, calendarEndIndex),
+        rawLines: eventLines
       };
     });
 };
@@ -131,6 +147,8 @@ export const render = ({ output }: { output: any }) => {
 
   const transformedOutput = transformICalBuddyOutput(output);
 
+  const colors = config.colors || defaultColors;
+
   return (
     <div>
       {groupBy(
@@ -158,25 +176,32 @@ export const render = ({ output }: { output: any }) => {
                   ? "Tomorrow"
                   : daysFromToday === 2
                   ? "Day After Tomorrow"
-                  : group.group.toLocaleString() +
+                  : group.group.toLocaleDateString() +
                     ` (${daysFromToday} days from today)`
                 ).toUpperCase()}
               </h5>
               <div>
-                {events.map(event => {
+                {events.filter(event => !(config.hiddenCalendars && config.hiddenCalendars.includes(event.calendar))).map(event => {
+                  const calendarColor = colors[
+                  getStringNumber(event.calendar) % colors.length
+                    ];
+
                   return (
                     <div className="event">
+                      { !(config.hiddenComponents && config.hiddenComponents.calendar) ?
                       <span
                         className="calendar"
                         style={{
-                          backgroundColor:
-                            colors[
-                              getStringNumber(event.calendar) % colors.length
-                            ]
+                          backgroundColor: calendarColor
                         }}
                       >
                         {event.calendar}
-                      </span>
+                      </span> : <span
+                          className="calendar minimized"
+                          style={{
+                            backgroundColor: calendarColor
+                          }}
+                        />}
                       <div className="eventBody">
                         <div className="data">
                           <h4 className="name">{event.name}</h4>
@@ -211,20 +236,20 @@ export const render = ({ output }: { output: any }) => {
                             </span> :
                               <span className={"time allDay"}>All Day</span> }
                           </div>
-                          {event.location && (
+                          {event.location && !(config.hiddenComponents && config.hiddenComponents.location) && (
                             <p className="property location">
                               {event.location}
                             </p>
                           )}
-                          {event.attendees && (
+                          {event.attendees && !(config.hiddenComponents && config.hiddenComponents.attendees) && (
                             <p className="property attendees">
                               with {event.attendees}
                             </p>
                           )}
-                          {event.notes && (
+                          {event.notes && !(config.hiddenComponents && config.hiddenComponents.notes) && (
                             <p className="property notes">{event.notes}</p>
                           )}
-                          {event.rawLines && (
+                          {event.rawLines && config.debug && (
                             <p>{JSON.stringify(event.rawLines)}</p>
                           )}
                         </div>
@@ -295,16 +320,22 @@ export const className = {
     ".calendar": {
       backgroundColor: "white",
       borderRadius: 100,
-      marginBottom: 2.5,
+      marginBottom: 3,
       color: "black",
       padding: "2px 5px",
-      fontSize: "0.7em",
+      fontSize: "0.6em",
       display: "inline-block",
       verticalAlign: "middle",
-      textShadow: "none"
+      textShadow: "none",
+      "&.minimized": {
+        padding: 0,
+        width: 20,
+        height: 5,
+        marginBottom: 2.5,
+        overflow: 'hidden'
+      },
     },
     ".location": {},
-
     ".attendees": {},
     ".notes": {}
   }
