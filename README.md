@@ -9,3 +9,28 @@ There are currently unresolved issues with icalBuddy, so this widget may not wor
 ## Requirements
 
 This widgets requires [Python 2.7](https://www.python.org/downloads/)
+
+## Configuration
+
+Configuration resides in a `config.json` file in the widget directory. All of the properties are optional, but the `config.json` file must be present in this folder for `iCal Widget` to run.
+
+```typescript
+interface IConfig {
+  // flag to show the individual event raw `iCalBuddy` output lines
+  debug?: boolean;
+  
+  // individual event components that should be hidden
+  hiddenComponents?: {
+    location?: boolean;
+    notes?: boolean;
+    attendees?: boolean;
+    calendar: boolean;
+  };
+  
+  // calendar names that should be hidden from the widget
+  hiddenCalendars?: string[];
+  
+  // the colors used for the `calendar` tag
+  colors?: string[];
+}
+```

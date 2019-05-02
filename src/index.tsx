@@ -176,7 +176,9 @@ export const render = ({ output }: { output: any }) => {
                   ? "Tomorrow"
                   : daysFromToday === 2
                   ? "Day After Tomorrow"
-                  : group.group.toLocaleDateString() +
+                  : group.group.toLocaleDateString("en-US", {
+                      weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric'
+                        }) +
                     ` (${daysFromToday} days from today)`
                 ).toUpperCase()}
               </h5>
