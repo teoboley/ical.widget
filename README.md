@@ -21,14 +21,26 @@ interface IConfig {
   
   // individual event components that should be hidden
   hiddenComponents?: {
-    location?: boolean;
-    notes?: boolean;
-    attendees?: boolean;
-    calendar: boolean;
+    location?: boolean | {
+      calendars?: string[] | RegExp;
+      events?: string[] | RegExp;
+    };
+    notes?: boolean | {
+      calendars?: string[] | RegExp;
+      events?: string[] | RegExp;
+    };
+    attendees?: boolean | {
+      calendars?: string[] | RegExp;
+      events?: string[] | RegExp;
+    };
+    calendar: boolean | {
+      calendars?: string[] | RegExp;
+      events?: string[] | RegExp;
+    };
   };
   
   // calendar names that should be hidden from the widget
-  hiddenCalendars?: string[];
+  hiddenCalendars?: string[] | RegExp;
   
   // the colors used for the `calendar` tag
   colors?: string[];
