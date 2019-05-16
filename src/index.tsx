@@ -57,7 +57,19 @@ interface IConfig {
         }
   };
   hiddenCalendars?: string[] | RegExp;
-  colors?: string[];
+  colors?: {
+    date?: string;
+    calendar?: Array<{
+      text: string;
+      background: string;
+    }>;
+    name?: string;
+    times?: string;
+    property?: string;
+    location?: string;
+    attendees?: string;
+    notes?: string;
+  };
   componentOverrides?: {
     events?: EventsComponentOverride<IDebuggableEvent[]>; // FIXME: Typing is jank
     date?: EventsComponentOverride<Date>;
@@ -77,25 +89,34 @@ interface IConfig {
 
 const config: IConfig = externalConfig;
 
-const defaultColors = [
-  "#ef5350",
-  "#ec407a",
-  "#ab47bc",
-  "#7e57c2",
-  "#5c6bc0",
-  "#42a5f5",
-  "#29b6f6",
-  "#26c6da",
-  "#26a69a",
-  "#66bb6a",
-  "#9ccc65",
-  "#d4e157",
-  "#ffee58",
-  "#ffca28",
-  "#ffa726",
-  "#ff7043",
-  "#8d6e63"
-];
+const colors = {
+  date: (config.colors && config.colors.date) || "#AAAAAA",
+  calendar: (config.colors && config.colors.calendar) || [
+    {background: "#ef5350", text: "black"},
+    {background: "#ec407a", text: "black"},
+    {background: "#ab47bc", text: "black"},
+    {background: "#7e57c2", text: "black"},
+    {background: "#5c6bc0", text: "black"},
+    {background: "#42a5f5", text: "black"},
+    {background: "#29b6f6", text: "black"},
+    {background: "#26c6da", text: "black"},
+    {background: "#26a69a", text: "black"},
+    {background: "#66bb6a", text: "black"},
+    {background: "#9ccc65", text: "black"},
+    {background: "#d4e157", text: "black"},
+    {background: "#ffee58", text: "black"},
+    {background: "#ffca28", text: "black"},
+    {background: "#ffa726", text: "black"},
+    {background: "#ff7043", text: "black"},
+    {background: "#8d6e63", text: "black"}
+  ],
+  name: (config.colors && config.colors.name) || "#E9E9E9",
+  times: (config.colors && config.colors.times) || "#BBBBBB",
+  property: (config.colors && config.colors.property) || "#909090",
+  location: (config.colors && config.colors.location),
+  attendees: (config.colors && config.colors.attendees),
+  notes: (config.colors && config.colors.notes)
+};
 
 const notesLineSeparator = "\\r";
 
@@ -173,8 +194,6 @@ function renderEventComponent(event: IDebuggableEvent, scopedEvents: IDebuggable
 export const render = ({ output }: { output: any }) => {
   const transformedOutput = transformICalBuddyOutput(output);
 
-  const colors = config.colors || defaultColors;
-
   return (
     <div>
       {renderEventsComponent(transformedOutput)(
@@ -243,8 +262,8 @@ export const render = ({ output }: { output: any }) => {
                         )
                         .map(event => {
                           const calendarColor =
-                            colors[
-                              getStringNumber(event.calendar) % colors.length
+                            colors.calendar[
+                              getStringNumber(event.calendar) % colors.calendar.length
                             ];
 
                           const componentIsHidden = (
@@ -328,7 +347,8 @@ export const render = ({ output }: { output: any }) => {
                                       <span
                                         className="calendar"
                                         style={{
-                                          backgroundColor: calendarColor
+                                          color: calendarColor.text,
+                                          backgroundColor: calendarColor.background
                                         }}
                                       >
                                         {children}
@@ -337,7 +357,8 @@ export const render = ({ output }: { output: any }) => {
                                       <span
                                         className="calendar minimized"
                                         style={{
-                                          backgroundColor: calendarColor
+                                          color: calendarColor.text,
+                                          backgroundColor: calendarColor.background
                                         }}
                                       />
                                     )
@@ -466,11 +487,10 @@ export const className = {
   left: 25,
   bottom: 20,
   fontFamily: "system, -apple-system",
-  color: "#E9E9E9",
   width,
   ".date": {
     marginBottom: 10,
-    color: "#AAAAAA"
+    color: colors.date
   },
   ".event": {
     marginBottom: 20,
@@ -491,7 +511,7 @@ export const className = {
       marginTop: 2,
       marginBottom: 2,
       fontSize: "0.85em",
-      color: "#BBBBBB"
+      color: colors.times
     },
     ".time": {
       ".soon": {},
@@ -502,14 +522,15 @@ export const className = {
       marginTop: 2,
       marginBottom: 2,
       fontSize: "0.75em",
-      color: "#909090"
+      color: colors.property
     },
     ".name": {
       marginTop: 0,
       marginBottom: 2.5,
       marginRight: 10,
       verticalAlign: "top",
-      lineHeight: 1.3
+      lineHeight: 1.3,
+      color: colors.name
     },
     ".calendar": {
       backgroundColor: "white",
@@ -529,13 +550,18 @@ export const className = {
         overflow: "hidden"
       }
     },
-    ".location": {},
-    ".attendees": {},
+    ".location": {
+      color: colors.location
+    },
+    ".attendees": {
+      color: colors.attendees
+    },
     ".notes": {
       p: {
         marginTop: 0,
         marginBottom: 0
-      }
+      },
+      color: colors.notes
     }
   }
 };
