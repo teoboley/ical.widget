@@ -44,6 +44,7 @@ interface IConfig {
     
     // text color for components
     colors?: {
+        darkmode?: boolean; // used to switch the default colors to a dark theme
         date?: string;
         calendar?: Array<{
             text: string;

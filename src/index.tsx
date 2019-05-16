@@ -58,6 +58,7 @@ interface IConfig {
   };
   hiddenCalendars?: string[] | RegExp;
   colors?: {
+    darkmode?: boolean;
     date?: string;
     calendar?: Array<{
       text: string;
@@ -90,7 +91,6 @@ interface IConfig {
 const config: IConfig = externalConfig;
 
 const colors = {
-  date: (config.colors && config.colors.date) || "#AAAAAA",
   calendar: (config.colors && config.colors.calendar) || [
     {background: "#ef5350", text: "black"},
     {background: "#ec407a", text: "black"},
@@ -110,9 +110,10 @@ const colors = {
     {background: "#ff7043", text: "black"},
     {background: "#8d6e63", text: "black"}
   ],
-  name: (config.colors && config.colors.name) || "#E9E9E9",
-  times: (config.colors && config.colors.times) || "#BBBBBB",
-  property: (config.colors && config.colors.property) || "#909090",
+  date: (config.colors && config.colors.date) || (!(config.colors && config.colors.darkmode) ? "#AAAAAA" : "#555555"),
+  name: (config.colors && config.colors.name) || (!(config.colors && config.colors.darkmode) ? "#E9E9E9" : "#161616"),
+  times: (config.colors && config.colors.times) || (!(config.colors && config.colors.darkmode) ? "#BBBBBB" : "#444444"),
+  property: (config.colors && config.colors.property) || (!(config.colors && config.colors.darkmode) ? "#909090" : "#6f6f6f"),
   location: (config.colors && config.colors.location),
   attendees: (config.colors && config.colors.attendees),
   notes: (config.colors && config.colors.notes)
@@ -494,7 +495,7 @@ export const className = {
   },
   ".event": {
     marginBottom: 20,
-    textShadow: "1px 0 5px rgba(0,0,0,0.6)",
+    textShadow: !(config.colors && config.colors.darkmode) ? "1px 0 5px rgba(0,0,0,0.6)" : "1px 0 5px rgba(255,255,255,0.6)",
 
     ".eventBody": {
       display: "flex"
