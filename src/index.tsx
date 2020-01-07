@@ -1,6 +1,6 @@
 import externalConfig from "./lib/config.jsx";
 import * as util from "util";
-import { transformICalBuddyOutput, groupBy } from "./lib/utils";
+import { transformICalBuddyOutput, groupBy, deepMerge } from "./lib/utils";
 
 interface IEventOptionalDisplayProperties {
   location?: string;
@@ -86,6 +86,7 @@ interface IConfig {
     attendees?: EventComponentOverride<string>;
     calendar?: EventComponentOverride<string>;
   };
+  className?: React.CSSProperties;
 }
 
 const config: IConfig = externalConfig;
@@ -484,7 +485,7 @@ export const render = ({ output }: { output: any }) => {
 const width = 400;
 const metadataWidth = 100;
 
-export const className = {
+export const className = deepMerge((config.className || {}), {
   left: 25,
   bottom: 20,
   fontFamily: "system, -apple-system",
@@ -565,4 +566,4 @@ export const className = {
       color: colors.notes
     }
   }
-};
+});
