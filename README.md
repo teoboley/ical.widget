@@ -74,6 +74,9 @@ interface IConfig {
         attendees?: EventComponentOverride<string>;
         calendar?: EventComponentOverride<string>;
     };
+
+    // for overriding the default styles without altering the component structure
+    className?: CSSProperties;
 }
 ```
 

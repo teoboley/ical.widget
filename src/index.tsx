@@ -485,7 +485,7 @@ export const render = ({ output }: { output: any }) => {
 const width = 400;
 const metadataWidth = 100;
 
-export const className = deepMerge((config.className || {}), {
+export const className = deepMerge({
   left: 25,
   bottom: 20,
   fontFamily: "system, -apple-system",
@@ -539,7 +539,7 @@ export const className = deepMerge((config.className || {}), {
       borderRadius: 100,
       marginBottom: 3,
       color: "black",
-      padding: "2px 5px",
+      padding: "2px 6px",
       fontSize: "0.6em",
       display: "inline-block",
       verticalAlign: "middle",
@@ -566,4 +566,4 @@ export const className = deepMerge((config.className || {}), {
       color: colors.notes
     }
   }
-});
+}, (config.className || {}));
