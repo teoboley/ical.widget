@@ -1,6 +1,7 @@
 import externalConfig from "./lib/config.jsx";
 import * as util from "util";
-import { groupBy, deepMerge } from "./utils";
+import { exec } from 'child_process';
+import { groupBy, deepMerge, transformICalBuddyOutput } from "./utils";
 
 interface IEventOptionalDisplayProperties {
   location?: string;
@@ -189,25 +190,8 @@ function renderEventComponent(event: IDebuggableEvent, scopedEvents: IDebuggable
   };
 }
 
-const transformedOutput: IDebuggableEvent[] = [{
-  name: "An Event",
-  startTime: (() => { const d = new Date(); d.setHours(21,0,0,0); return d; })(),
-  endTime: (() => { const d = new Date(); d.setHours(22,0,0,0); return d; })(),
-  allDay: false,
-  calendar: "Default Calendar"
-},
-  {
-    name: "Another Event",
-    startTime: (() => { const d = new Date(); d.setHours(22,0,0,0); return d; })(),
-    endTime: (() => { const d = new Date(); d.setHours(22,30,0,0); return d; })(),
-    allDay: false,
-    calendar: "Default Calendar"
-  }];
-
 export const render = ({ output }: { output: any }) => {
-  // console.log("output", output)
-  // const transformedOutput = transformICalBuddyOutput(output);
-  // console.log("transformedOutput", transformedOutput)
+  const transformedOutput = transformICalBuddyOutput(output);
 
   return (
     <div>
