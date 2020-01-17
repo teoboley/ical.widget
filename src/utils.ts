@@ -1,4 +1,4 @@
-import {IDebuggableEvent} from "../index";
+import {IDebuggableEvent} from "./index";
 
 export const transformICalBuddyOutput = (output: string): IDebuggableEvent[] => {
   return output

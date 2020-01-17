@@ -1,6 +1,6 @@
 import externalConfig from "./lib/config.jsx";
 import * as util from "util";
-import { transformICalBuddyOutput, groupBy, deepMerge } from "./lib/utils";
+import { groupBy, deepMerge } from "./utils";
 
 interface IEventOptionalDisplayProperties {
   location?: string;
@@ -146,16 +146,14 @@ function renderEventsComponent(events: IEvent[]) {
       <span>{children}</span>
     )
   ) {
-    const MaybeOverride =
+    const MaybeOverride: any =
       (config.componentOverrides && config.componentOverrides[key]) || null;
 
     if (MaybeOverride) {
-      const Override: any = MaybeOverride;
-
       return (
-        <Override Original={DefaultRender} events={events}>
+        <MaybeOverride Original={DefaultRender} events={events}>
           {value}
-        </Override>
+        </MaybeOverride>
       );
     } else {
       return <DefaultRender>{value}</DefaultRender>;
@@ -176,16 +174,14 @@ function renderEventComponent(event: IDebuggableEvent, scopedEvents: IDebuggable
       <span>{children}</span>
     )
   ) {
-    const MaybeOverride =
+    const MaybeOverride: any =
       (config.componentOverrides && config.componentOverrides[key]) || null;
 
     if (MaybeOverride) {
-      const Override: any = MaybeOverride;
-
       return (
-        <Override Original={DefaultRender} event={event}>
+        <MaybeOverride Original={DefaultRender} event={event}>
           {value}
-        </Override>
+        </MaybeOverride>
       );
     } else {
       return <DefaultRender>{value}</DefaultRender>;
@@ -193,8 +189,25 @@ function renderEventComponent(event: IDebuggableEvent, scopedEvents: IDebuggable
   };
 }
 
+const transformedOutput: IDebuggableEvent[] = [{
+  name: "An Event",
+  startTime: (() => { const d = new Date(); d.setHours(21,0,0,0); return d; })(),
+  endTime: (() => { const d = new Date(); d.setHours(22,0,0,0); return d; })(),
+  allDay: false,
+  calendar: "Default Calendar"
+},
+  {
+    name: "Another Event",
+    startTime: (() => { const d = new Date(); d.setHours(22,0,0,0); return d; })(),
+    endTime: (() => { const d = new Date(); d.setHours(22,30,0,0); return d; })(),
+    allDay: false,
+    calendar: "Default Calendar"
+  }];
+
 export const render = ({ output }: { output: any }) => {
-  const transformedOutput = transformICalBuddyOutput(output);
+  // console.log("output", output)
+  // const transformedOutput = transformICalBuddyOutput(output);
+  // console.log("transformedOutput", transformedOutput)
 
   return (
     <div>
