@@ -49,6 +49,7 @@ type ExtractEventsOverrideType<Type> = Type extends EventsComponentOverride<
 
 interface IConfig {
   debug?: boolean;
+  daysToDisplay?: number;
   hiddenComponents?: {
     [P in keyof IEventOptionalDisplayProperties]?:
       | boolean
@@ -122,11 +123,12 @@ const colors = {
 };
 
 const notesLineSeparator = "\\r";
+const daysToDisplay = config.daysToDisplay !== undefined ? config.daysToDisplay : 3;
 
 export const command =
   'ical.widget/icalBuddy  --noRelativeDates --dateFormat "date: %a %b %e %Y|" --timeFormat "%H:%M:%S GMT%z" --bullet "event: " --notesNewlineReplacement "' +
   notesLineSeparator +
-  '" eventsToday+6';
+  `" eventsToday+${daysToDisplay + 2}`;
 
 export const refreshFrequency = 60_000 * 5; // ms
 
@@ -205,14 +207,31 @@ export const render = ({ output }: { output: any }) => {
               event => event.startTime,
               (v1, v2) => v1.toDateString() === v2.toDateString()
             )
-              .slice(0, 3)
-              .map(group => {
-                const events = group.elements;
+              .slice(0, daysToDisplay)
+              .map(({ group: startTime, elements: events }) => ({
+                startTime,
+                events: events
+                .filter(
+                  event =>
+                    !(
+                      config.hiddenCalendars &&
+                      (Array.isArray(config.hiddenCalendars)
+                        ? config.hiddenCalendars.includes(
+                            event.calendar
+                          )
+                        : event.calendar.match(
+                            config.hiddenCalendars
+                          ) !== null)
+                    )
+                )
+              }))
+              .filter(({ events }) => events.length !== 0)
+              .map(({ startTime, events }) => {
                 return (
                   <div>
                     {renderEventsComponent(events)(
                       "date",
-                      group.group,
+                      startTime,
                       ({ children }) => {
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
@@ -246,19 +265,6 @@ export const render = ({ output }: { output: any }) => {
                     )}
                     <div>
                       {events
-                        .filter(
-                          event =>
-                            !(
-                              config.hiddenCalendars &&
-                              (Array.isArray(config.hiddenCalendars)
-                                ? config.hiddenCalendars.includes(
-                                    event.calendar
-                                  )
-                                : event.calendar.match(
-                                    config.hiddenCalendars
-                                  ) !== null)
-                            )
-                        )
                         .map(event => {
                           const calendarColor =
                             colors.calendar[
