@@ -400,8 +400,10 @@ export const render = ({ output }: { output: any }) => {
                                               </span>
                                               {children.endTime && (
                                                 <span>
+                                                  <span className="time separator">
                                                   {" "}
                                                   -{" "}
+                                                  </span>
                                                   <span className="time end">
                                                     {children.endTime.toDateString() !==
                                                     children.startTime.toDateString()
