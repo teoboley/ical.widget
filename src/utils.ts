@@ -1,44 +1,38 @@
 import {IDebuggableEvent} from "./index";
 
 export const transformICalBuddyOutput = (output: string): IDebuggableEvent[] => {
+  console.log(output);
   return output
     .split("event: ")
     .filter(line => line !== "")
     .map(eventString => {
+      console.log(eventString);
       const eventLines = eventString.split("\n");
       const nameLine = eventLines[0];
+      console.log("NAME LINE", nameLine);
 
       const locationLine = eventLines.find(line => line.includes("location:"));
-      const dateLine = eventLines.find(line => line.includes("date:"))!;
+      const dateLine = eventLines.find(line => line.includes("date:"))!.trim();
+      
+      const dateLabel = "date: ";
+      const timeSeparator = "| at ";
 
-      const dateAndTimeSeparatorIndex = dateLine.indexOf("|");
-      const date = dateLine.substring(
-        dateLine.indexOf(": ") + 2,
-        dateAndTimeSeparatorIndex
-      );
+      // split date string into two sections: start date and end date
+      const startAndEndTimeSeparator = " - "
+      const startAndEndTimeSeparatorIndex = dateLine.indexOf(startAndEndTimeSeparator);
+      const startDateTimeSection = dateLine.substring(0, startAndEndTimeSeparatorIndex).replace(dateLabel, "");
+      const endDateTimeSection = dateLine.substring(startAndEndTimeSeparatorIndex + startAndEndTimeSeparator.length).replace(dateLabel, "");
 
-      const timeSeparatorIndex = dateLine.lastIndexOf(" - ");
+      const startDateString = startDateTimeSection.substring(0, startDateTimeSection.indexOf(timeSeparator));
+      const startTimeString = startDateTimeSection.substring(startDateTimeSection.indexOf(timeSeparator) + timeSeparator.length);
+      const startTime = new Date(`${startDateString} ${startTimeString}`);
 
-      const startTimeString =
-        (timeSeparatorIndex !== -1 &&
-          dateLine.substring(
-            dateAndTimeSeparatorIndex + 5,
-            timeSeparatorIndex
-          )) ||
-        null;
-      const endTimeString =
-        (timeSeparatorIndex !== -1 &&
-          dateLine.substring(timeSeparatorIndex + 3)) ||
-        null;
+      const endDateString = endDateTimeSection.substring(0, endDateTimeSection.indexOf(timeSeparator));
+      const endTimeString = endDateTimeSection.substring(endDateString !== "" ? endDateTimeSection.indexOf(timeSeparator) + timeSeparator.length : 0);
+      // end date may or may not have an actual date string prefixing it
+      const endTime = new Date(`${endDateString !== "" ? endDateString : startDateString} ${endTimeString}`);
 
       const notesLine = eventLines.find(line => line.includes("notes:"));
-
-      const startTime = new Date(
-        date + ((startTimeString && " " + startTimeString) || "")
-      );
-      const endTime = new Date(
-        date + ((endTimeString && " " + endTimeString) || "")
-      );
 
       const attendeesLine = eventLines.find(line =>
         line.includes("attendees:")

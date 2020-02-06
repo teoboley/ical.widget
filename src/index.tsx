@@ -405,7 +405,13 @@ export const render = ({ output }: { output: any }) => {
                                                   <span className="time end">
                                                     {children.endTime.toDateString() !==
                                                     children.startTime.toDateString()
-                                                      ? children.endTime.toLocaleString()
+                                                      ? children.endTime.toLocaleString(undefined, {
+                                                        month: "numeric",
+                                                        day: "numeric",
+                                                        hour12: true,
+                                                        hour: "numeric",
+                                                        minute: "2-digit"
+                                                      })
                                                       : children.endTime.toLocaleTimeString(
                                                           undefined,
                                                           {
