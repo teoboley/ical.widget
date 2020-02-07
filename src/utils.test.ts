@@ -132,3 +132,25 @@ test("Multi-day event is parsed correctly", () => {
     }
   ]);
 });
+
+test("All day event is parsed correctly", () => {
+  const iCalBuddyOutput = `Valentine’s Day (US Holidays)
+      date: Fri Feb 14 2020|
+  `;
+
+  expect(transformICalBuddyOutput(iCalBuddyOutput)).toEqual([{
+    allDay: true,
+    attendees: undefined,
+    calendar: "US Holidays",
+    startTime: new Date("Fri Feb 14 2020"),
+    endTime: new Date("Fri Feb 14 2020"),
+    location: undefined,
+    name: "Valentine’s Day",
+    notes: undefined,
+    rawLines: [
+      "Valentine’s Day (US Holidays)",
+      "      date: Fri Feb 14 2020|",
+      "  "
+    ]
+  }])
+});

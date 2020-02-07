@@ -13,24 +13,29 @@ export const transformICalBuddyOutput = (output: string): IDebuggableEvent[] => 
 
       const locationLine = eventLines.find(line => line.includes("location:"));
       const dateLine = eventLines.find(line => line.includes("date:"))!.trim();
-      
+
       const dateLabel = "date: ";
-      const timeSeparator = "| at ";
+      const timeSeparator = "|";
 
       // split date string into two sections: start date and end date
-      const startAndEndTimeSeparator = " - "
+      const startAndEndTimeSeparator = " - ";
       const startAndEndTimeSeparatorIndex = dateLine.indexOf(startAndEndTimeSeparator);
-      const startDateTimeSection = dateLine.substring(0, startAndEndTimeSeparatorIndex).replace(dateLabel, "");
+      const startDateTimeSection = dateLine.substring(0, startAndEndTimeSeparatorIndex > -1 ? startAndEndTimeSeparatorIndex : undefined).replace(dateLabel, "");
       const endDateTimeSection = dateLine.substring(startAndEndTimeSeparatorIndex + startAndEndTimeSeparator.length).replace(dateLabel, "");
 
-      const startDateString = startDateTimeSection.substring(0, startDateTimeSection.indexOf(timeSeparator));
-      const startTimeString = startDateTimeSection.substring(startDateTimeSection.indexOf(timeSeparator) + timeSeparator.length);
+      const startTimeSeparatorIndex = startDateTimeSection.indexOf(timeSeparator);
+      const startDateString = startDateTimeSection.substring(0, startTimeSeparatorIndex);
+      console.log("START DATE STRING", startDateString);
+      const startTimeString = startDateTimeSection.substring(startTimeSeparatorIndex + timeSeparator.length).replace("at ", "");
+      console.log("START TIME STRING", startTimeString);
       const startTime = new Date(`${startDateString} ${startTimeString}`);
 
-      const endDateString = endDateTimeSection.substring(0, endDateTimeSection.indexOf(timeSeparator));
-      const endTimeString = endDateTimeSection.substring(endDateString !== "" ? endDateTimeSection.indexOf(timeSeparator) + timeSeparator.length : 0);
+      const endDateString = endDateTimeSection.substring(0, endDateTimeSection.indexOf(timeSeparator)) || null;
+      const endTimeString = endDateTimeSection.substring(endDateString ? endDateTimeSection.indexOf(timeSeparator) + timeSeparator.length : 0).replace("at ", "");
+
+      const resolvedEndDateString = endDateString ? endDateString : startDateString;
       // end date may or may not have an actual date string prefixing it
-      const endTime = new Date(`${endDateString !== "" ? endDateString : startDateString} ${endTimeString}`);
+      const endTime = new Date(`${resolvedEndDateString} ${endTimeString}`);
 
       const notesLine = eventLines.find(line => line.includes("notes:"));
 
