@@ -4,6 +4,7 @@ import { exec } from 'child_process';
 import { groupBy, deepMerge, transformICalBuddyOutput } from "./utils";
 
 interface IEventOptionalDisplayProperties {
+  url?: string;
   location?: string;
   notes?: string;
   attendees?: string;
@@ -69,6 +70,7 @@ interface IConfig {
     name?: string;
     times?: string;
     property?: string;
+    url?: string;
     location?: string;
     attendees?: string;
     notes?: string;
@@ -118,6 +120,7 @@ const colors = {
   times: (config.colors && config.colors.times) || (!(config.colors && config.colors.darkmode) ? "#BBBBBB" : "#444444"),
   property: (config.colors && config.colors.property) || (!(config.colors && config.colors.darkmode) ? "#909090" : "#6f6f6f"),
   location: (config.colors && config.colors.location),
+  url: (config.colors && config.colors.url),
   attendees: (config.colors && config.colors.attendees),
   notes: (config.colors && config.colors.notes)
 };
@@ -471,6 +474,15 @@ export const render = ({ output }: { output: any }) => {
                                           </div>
                                         )
                                       )}
+                                      {currentEvent.url &&
+                                      !componentIsHidden("url") &&
+                                      renderComponent(
+                                        "url",
+                                        currentEvent.url,
+                                        ({ children }) => (
+                                          <a href={children} className="property url">URL</a>
+                                        )
+                                      )}
                                     {currentEvent.rawLines && config.debug && (
                                       <p>
                                         {JSON.stringify(currentEvent.rawLines)}
@@ -565,6 +577,9 @@ export const className = deepMerge({
     },
     ".location": {
       color: colors.location
+    },
+    ".url": {
+      color: colors.url || "white"
     },
     ".attendees": {
       color: colors.attendees

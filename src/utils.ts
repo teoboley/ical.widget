@@ -37,6 +37,7 @@ export const transformICalBuddyOutput = (output: string): IDebuggableEvent[] => 
       // end date may or may not have an actual date string prefixing it
       const endTime = new Date(`${resolvedEndDateString} ${endTimeString}`);
 
+      const urlLine = eventLines.find(line => line.includes("url:"));
       const notesLine = eventLines.find(line => line.includes("notes:"));
 
       const attendeesLine = eventLines.find(line =>
@@ -48,6 +49,8 @@ export const transformICalBuddyOutput = (output: string): IDebuggableEvent[] => 
 
       return {
         name: nameLine.substring(0, calendarStartIndex - 1),
+        url: urlLine &&
+          urlLine.substring(urlLine.indexOf(": ") + 2),
         location:
           locationLine &&
           locationLine.substring(locationLine.indexOf(": ") + 2),

@@ -3,6 +3,7 @@ import { transformICalBuddyOutput } from "./utils";
 test("Event is parsed correctly", () => {
   const iCalBuddyOutput = `event: A Test Event (Classes)
     location: Boston, MA
+    url: www.google.com
     date: Mon Feb 10 2020| at 18:00:00 GMT-0500 - 21:30:00 GMT-0500
 `;
 
@@ -13,12 +14,14 @@ test("Event is parsed correctly", () => {
       calendar: "Classes",
       startTime: new Date("Mon Feb 10 2020 18:00:00 GMT-0500"),
       endTime: new Date("Mon Feb 10 2020 21:30:00 GMT-0500"),
+      url: "www.google.com",
       location: "Boston, MA",
       name: "A Test Event",
       notes: undefined,
       rawLines: [
         "A Test Event (Classes)",
         "    location: Boston, MA",
+        "    url: www.google.com",
         "    date: Mon Feb 10 2020| at 18:00:00 GMT-0500 - 21:30:00 GMT-0500",
         ""
       ]
